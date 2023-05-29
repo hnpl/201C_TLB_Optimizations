@@ -6,6 +6,7 @@ benchmarks/json
 benchmarks/*/*.rvv*
 !benchmarks/bin/*.rvv*
 
+results/
 
 #################################################
 # gem5
