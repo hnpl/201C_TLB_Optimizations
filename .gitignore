@@ -4,6 +4,7 @@
 
 benchmarks/json
 benchmarks/*/*.rvv*
+!benchmarks/bin/*.rvv*
 
 
 #################################################
