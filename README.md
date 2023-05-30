@@ -7,6 +7,15 @@ git clone https://github.com/takekoputa/201C_TLB_Optimizations --recursive
 cd 201C_TLB_Optimizations
 ```
 
+## Compiling gem5 on CSIF machines
+
+```sh
+pip3 install scons --users
+git submodule update --init --recursive --progress
+cd gem5
+~/.local/bin/scons build/RISCV/gem5.opt -j`nproc`
+```
+
 ## Compile Benchmarks
 
 ### Installing Dependencies
