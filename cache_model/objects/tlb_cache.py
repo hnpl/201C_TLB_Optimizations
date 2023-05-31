@@ -70,18 +70,17 @@ class TLBCache(Device):
     def receive_request_and_send_response(self, vaddr):
         vaddr_tag, vaddr_idx, __ = self.parse_vaddr(vaddr)
         position = self._find_entry_position(vaddr)
-        print(self.name, position)
         target_entry = None
         if position == -1: # TLB cache miss
-            print(self.name, "miss")
+            #print(self.name, "miss")
             target_entry = self.send_request_and_receive_response(vaddr)
             evicted_entry = self._add_new_entry(target_entry)
             #if not evicted_entry == None:
             #    self.send_eviction(evicted_entry)
         else: # TLB cache hit
-            print(self.name, "hit")
+            #print(self.name, "hit")
             self.cache_memory[vaddr_idx][position].access_time = self.tick
-            target_entry = self.cache_memory[vaddr_idx][position].translate(vaddr)
+            target_entry = self.cache_memory[vaddr_idx][position]
         return target_entry
     def send_request_and_receive_response(self, vaddr):
         return self.lower_level_device.receive_request_and_send_response(vaddr)
