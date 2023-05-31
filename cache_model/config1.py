@@ -1,5 +1,5 @@
-from memory_objects.tlb_cache import TLBCache
-from memory_objects.memory_backend import MemoryBackend
+from objects.tlb_cache import TLBCache
+from objects.memory_backend import MemoryBackend
 from constants import *
 
 if __name__ == "__main__":
@@ -9,11 +9,11 @@ if __name__ == "__main__":
     backend_memory = MemoryBackend("Mem", page_size_bytes = 4 * oneKiB)
     # connections
     ## L1 <-> L2
-    l1_tlb.connect_lower_level_memory_device(l2_tlb)
-    l2_tlb.connect_higher_level_memory_device(l1_tlb)
+    l1_tlb.connect_lower_level_device(l2_tlb)
+    l2_tlb.connect_higher_level_device(l1_tlb)
     ## L2 <-> mem
-    l2_tlb.connect_lower_level_memory_device(backend_memory)
-    backend_memory.connect_higher_level_memory_device(l2_tlb)
+    l2_tlb.connect_lower_level_device(backend_memory)
+    backend_memory.connect_higher_level_device(l2_tlb)
 
     # Some action
     for addr in range(0x1200, 0x40000, 0x600):

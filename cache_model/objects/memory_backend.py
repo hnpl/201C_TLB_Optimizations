@@ -1,10 +1,10 @@
-from .memory_device import MemoryDevice
+from .device import Device
 from .tlb_cache_entry import TLBCacheEntry
 
 from math import log2
 
 # This is a readonly memory backend
-class MemoryBackend(MemoryDevice):
+class MemoryBackend(Device):
     def __init__(self, name, page_size_bytes):
         super().__init__(name)
         self.translations = {}

@@ -1,10 +1,10 @@
 from math import log2
 
-from .memory_device import MemoryDevice
+from .device import Device
 from .tlb_cache_entry import TLBCacheEntry
 
 # A read-only 0-latency cache model
-class TLBCache(MemoryDevice):
+class TLBCache(Device):
     def __init__(self, name, num_entries, associativity, page_size_bytes):
         super().__init__(name)
         self.num_entries = num_entries
@@ -84,7 +84,7 @@ class TLBCache(MemoryDevice):
             target_entry = self.cache_memory[vaddr_idx][position].translate(vaddr)
         return target_entry
     def send_request_and_receive_response(self, vaddr):
-        return self.lower_level_memory_device.receive_request_and_send_response(vaddr)
+        return self.lower_level_device.receive_request_and_send_response(vaddr)
 
     # Don't need to send or receive eviction as this is a readonly writeback cache, i.e., a strictly-inclusive cache
     # def send_eviction(self, cache_entry):
