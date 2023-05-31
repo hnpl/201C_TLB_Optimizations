@@ -21,6 +21,9 @@ class TLBCache(Device):
             ] for __ in range(self.num_entries // self.associativity)
         ]
         self.replacement_policy = "lru"
+    def regStats(self):
+        self.addStat("numAccesses", 0)
+        self.addStat("numMisses", 0)
     def print_cache_memory(self):
         for index in range(2**self.num_index_bits):
             print(f"Index {index}:")
@@ -71,8 +74,10 @@ class TLBCache(Device):
         vaddr_tag, vaddr_idx, __ = self.parse_vaddr(vaddr)
         position = self._find_entry_position(vaddr)
         target_entry = None
+        self.stats["numAccesses"] += 1
         if position == -1: # TLB cache miss
             #print(self.name, "miss")
+            self.stats["numMisses"] += 1
             target_entry = self.send_request_and_receive_response(vaddr)
             evicted_entry = self._add_new_entry(target_entry)
             #if not evicted_entry == None:

@@ -10,6 +10,8 @@ class MemoryBackend(Device):
         self.translations = {}
         self.page_size_bytes = page_size_bytes
         self.num_offset_bits = round(log2(self.page_size_bytes))
+    def regStats(self):
+        self.addStat("numAccesses", 0)
     def parse_addr(self, addr):
         offset_bits = addr & ((2**self.num_offset_bits) - 1)
         vpn = addr >> self.num_offset_bits
@@ -17,6 +19,7 @@ class MemoryBackend(Device):
     def send_request_and_receive_response(self, vaddr):
         raise NotImplementedError("Backend memory does not send request.")
     def receive_request_and_send_response(self, vaddr):
+        self.stats["numAccesses"] += 1
         vpn, offset_bits = self.parse_addr(vaddr)
 
         # come up with a translation, we can simulate fragmentation here
