@@ -4,8 +4,8 @@ class AddressGenerator:
     def __init__(self, load_index_generator, store_index_generator, num_accesses, num_lanes, element_size_bytes = 8):
         self.num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes # round to the nearest integer this divisible by num_lanes
         self.num_lanes = num_lanes
-        self.load_index_generator = load_index_generator(self.num_accesses)
-        self.store_index_generator = store_index_generator(self.num_accesses)
+        self.load_index_generator = load_index_generator
+        self.store_index_generator = store_index_generator
         self.element_size_bytes = element_size_bytes
         self.load_base = self.get_default_load_base()
         self.store_base = self.get_default_store_base()

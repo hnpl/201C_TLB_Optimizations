@@ -3,25 +3,33 @@ from objects.memory_backend import MemoryBackend
 from objects.address_stream import AddressStreamManager
 
 from constants import *
-from generators import *
+from pattern_generators.address_generator import *
+from pattern_generators.index_generator import *
 
 def stream(n):
     for i in range(n):
         yield i
 
 if __name__ == "__main__":
+    num_lanes = 8
+    num_accesses = 100
+    num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes
+
     # Address generator
-    #address_generator = stream_generator(20)
-    address_generator = permutation_generator()
+    address_generator = AddressGenerator(
+        load_index_generator = MultiplicativeGenerator(num_accesses = num_accesses),
+        store_index_generator = LinearGenerator(num_accesses = num_accesses),
+        num_accesses = num_accesses,
+        num_lanes = num_lanes
+    )
 
     # Devices
-    num_lanes = 8
     address_stream_manager = AddressStreamManager(num_lanes = num_lanes, address_generator = address_generator)
     l1_tlbs = []
     l2_tlbs = []
     for i in range(num_lanes):
-        l1_tlbs.append(TLBCache(f"L1 {i}", num_entries = 2, associativity = 2, page_size_bytes = 4 * oneKiB))
-        l2_tlbs.append(TLBCache(f"L2 {i}", num_entries = 4, associativity = 4, page_size_bytes = 4 * oneKiB))
+        l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 2, associativity = 2, page_size_bytes = 4 * oneKiB))
+        l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 4, associativity = 4, page_size_bytes = 4 * oneKiB))
     backend_memory = MemoryBackend("Mem", page_size_bytes = 4 * oneKiB)
 
     # connections
