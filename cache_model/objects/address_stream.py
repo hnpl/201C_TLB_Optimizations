@@ -30,7 +30,6 @@ class AddressStreamManager:
         for i, stream in enumerate(self.streams):
             try:
                 vaddr = next(self.address_generator)
-                print(vaddr, "to", i)
                 paddr = stream.send_request_and_receive_response(vaddr)
             except StopIteration:
                 self.is_done = True

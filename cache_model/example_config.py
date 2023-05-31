@@ -12,7 +12,7 @@ def stream(n):
 
 if __name__ == "__main__":
     num_lanes = 8
-    num_accesses = 100
+    num_accesses = 10000000
     num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes
 
     # Address generator
@@ -28,8 +28,8 @@ if __name__ == "__main__":
     l1_tlbs = []
     l2_tlbs = []
     for i in range(num_lanes):
-        l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 2, associativity = 2, page_size_bytes = 4 * oneKiB))
-        l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 4, associativity = 4, page_size_bytes = 4 * oneKiB))
+        l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 32, associativity = 32, page_size_bytes = 4 * oneKiB))
+        l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 3 * 1024, associativity = 12, page_size_bytes = 4 * oneKiB))
     backend_memory = MemoryBackend("Mem", page_size_bytes = 4 * oneKiB)
 
     # connections

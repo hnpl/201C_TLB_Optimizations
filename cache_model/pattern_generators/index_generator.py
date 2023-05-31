@@ -9,6 +9,17 @@ class IndexGenerator:
     def __next__(self):
         return next(self.pattern)
 
+class FileGenerator(IndexGenerator):
+    def __init__(self, num_accesses, filepath):
+        super().__init__(num_accesses)
+        self.sequence = []
+        with open(filepath, "r") as f:
+            self.sequence = f.readline().strip().split(",")
+    def sequence_generator(self):
+        n = len(self.sequence)
+        for i in range(self.num_accesses):
+            yield self.sequence[i%n]
+
 class LinearGenerator(IndexGenerator):
     def __init__(self, num_accesses):
         super().__init__(num_accesses)
