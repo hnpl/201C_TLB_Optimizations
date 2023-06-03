@@ -9,10 +9,15 @@ class Device(StatsGroup):
         self.higher_level_device = []
         self.stat_registered = False
         self.stat_dumped = False
+        self.is_stalled = False
     def connect_lower_level_device(self, lower_level_device):
         self.lower_level_device = lower_level_device
     def connect_higher_level_device(self, higher_level_device):
         self.higher_level_device.append(higher_level_device)
+    def stall(self):
+        self.is_stalled = True
+    def unstall(self):
+        self.is_stalled = False
     def receive_request_and_send_response(self, vaddr):
         raise NotImplementedError("")
     def send_request_and_receive_response(self, vaddr):
