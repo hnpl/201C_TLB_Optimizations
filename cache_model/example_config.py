@@ -12,7 +12,7 @@ def stream(n):
 
 if __name__ == "__main__":
     num_lanes = 8
-    num_accesses = 1000
+    num_accesses = 10000000
     num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes
 
     # Address generator
