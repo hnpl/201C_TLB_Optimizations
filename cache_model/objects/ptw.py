@@ -4,7 +4,7 @@ from .device import Device
 from .tlb_cache_entry import TLBCacheEntry
 
 def page_size_bytes_to_num_page_table_levels(page_size_bytes):
-    num_offset_bits = round(log(page_size_bytes))
+    num_offset_bits = round(log2(page_size_bytes))
     if (num_offset_bits == 12):
         # offset = 0-11, vpn3 = 12-20, vpn2 = 21-29, vpn1 = 30-38, vpn0 = 39-47
         return 4
@@ -25,7 +25,7 @@ def page_size_bytes_to_num_page_table_levels(page_size_bytes):
 """
 def parse_vaddr(vaddr, page_size_bytes):
     vpnA, vpnB, vpnC, vpnD = 0, 0, 0, 0
-    num_offset_bits = round(log(page_size_bytes))
+    num_offset_bits = round(log2(page_size_bytes))
     vaddr >>= num_offset_bits
     mask = (1 << 9) - 1
     vpnA = vaddr & mask
@@ -62,18 +62,22 @@ def parse_vaddr(vaddr, page_size_bytes):
 class PageTableWalker(Device):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name)
-        self.num_offset_bits = round(log(page_table_size))
+        self.num_offset_bits = round(log2(page_table_size))
         self.num_page_table_levels = page_size_bytes_to_num_page_table_levels(page_table_size)
         
     def regStats(self):
         self.addStat("requestReceived", 0)
         self.addStat("requestSent", 0)
 
+    def send_request_and_receive_response(self, vaddr):
+        self.lower_level_device.receive_request_and_send_response(vaddr)
+
     def receive_request_and_send_response(self, vaddr):
         self.stats["requestReceived"] += 1
-        self.stats["requestSent"] += 1
-        for access_idx in self.num_page_table_levels:
-            self.send_request_and_receive_response(self, vaddr)
+        for access_idx in range(self.num_page_table_levels):
+            self.stats["requestSent"] += 1
+            self.send_request_and_receive_response(vaddr)
+        return vaddr >> self.num_offset_bits
 
 """
 |--------------||--------------||--------------||--------------||--------------||--------------||--------------||--------------|
@@ -91,22 +95,25 @@ class PageTableWalker(Device):
 class PooledPTWs(Device):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name)
-        self.num_offset_bits = round(log(page_table_size))
+        self.num_offset_bits = round(log2(page_table_size))
         self.page_size_bytes = page_table_size
         self.num_page_table_levels = page_size_bytes_to_num_page_table_levels(page_table_size)
         self.requests = []
     def regStats(self):
         self.addStat("requestReceived", 0)
         self.addStat("requestSent", 0)
+    def send_request_and_receive_response(self, vaddr):
+        return self.lower_level_device.receive_request_and_send_response(vaddr)
     def receive_request_and_send_response(self, vaddr):
         self.stats["requestReceived"] += 1
         self.requests.append(vaddr)
-        return vaddr # sending a fake response since we are not doing any real translation
+        print("receive", vaddr)
+        return vaddr >> self.num_offset_bits # sending a fake response since we are not doing any real translation
     def make_progress(self):
         raise NotImplementedError(f"{self.name} make_progress() must be implemented for all PooledPTWs devices")
     def access_memory(self, vaddr):
         self.stats["requestSent"] += 1
-        self.lower_level_device.send_request_and_receive_response(vaddr)
+        self.send_request_and_receive_response(vaddr)
 
 """
 - Baseline: make 1 translation per request                                (the PageTableWalker class)
@@ -125,13 +132,15 @@ class PooledPTWs(Device):
         3. (1, 32, 85, 92) accumulates to 4 requests
 """
 
-def PooledPTWs1(PooledPTWs):
+class PooledPTWs1(PooledPTWs):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name, page_table_size)
     def make_progress(self):
-        self.requests = set(self.requests)
-        for vaddr in self.request:
-            for vpn_i in parse_vaddr(vaddr):
+        vpns = set()
+        for vaddr in self.requests:
+            vpns.add(vaddr >> self.num_offset_bits)
+        for vaddr in self.requests:
+            for vpn_i in parse_vaddr(vaddr, self.page_size_bytes):
                 self.access_memory(vpn_i)
         self.requests = []
 
@@ -158,9 +167,10 @@ def PooledPTWs1(PooledPTWs):
         8. page table at vpn0 = 1, vpn1 = 32, vpn2 = 85, vpn3 = 92
 
 """
-def PooledPTWs2(PooledPTWs):
+class PooledPTWs2(PooledPTWs):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name, page_table_size)
+        self.count = 0
     def add_path_to_graph(sub_vpns, vpn_graph_root):
         w = vpn_graph_root
         for sub_vpn in sub_vpns:
@@ -169,20 +179,22 @@ def PooledPTWs2(PooledPTWs):
             w = w[sub_vpn]
     def make_progress(self):
         vpn_graph_root = {}
-        for vaddr in self.request:
-            sub_vpns = parse_vaddr(vaddr)
+        for vaddr in self.requests:
+            sub_vpns = parse_vaddr(vaddr, self.page_size_bytes)
             PooledPTWs2.add_path_to_graph(sub_vpns, vpn_graph_root)
         # using BFS to traverse the vpn graph and making one memory request per node
         to_be_visited = [vpn_graph_root]
         while to_be_visited:
             node = to_be_visited.pop(0)
             for sub_vpn, child_node in node.items():
+                self.count += 1
                 self.access_memory(sub_vpn)
                 to_be_visited.append(child_node)
         self.requests = []
+        print("make_progress", self.count)
 
 
-def PooledPTWs3(PooledPTWs):
+class PooledPTWs3(PooledPTWs):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name, page_table_size)
     def make_progress(self):
