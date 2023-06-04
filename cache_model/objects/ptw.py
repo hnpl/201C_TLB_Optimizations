@@ -179,6 +179,7 @@ class PooledPTWs2(PooledPTWs):
                 self.access_memory(sub_vpn)
                 to_be_visited.append(child_node)
         self.requests = []
+        print("make_progress", self.count)
 
 
 class PooledPTWs3(PooledPTWs):
