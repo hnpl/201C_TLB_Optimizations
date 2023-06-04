@@ -1,18 +1,16 @@
 from objects.tlb_cache import TLBCache
 from objects.memory_backend import MemoryBackend
 from objects.address_stream import AddressStreamManager
+from objects.ptw import *
 
 from constants import *
 from pattern_generators.address_generator import *
 from pattern_generators.index_generator import *
 
-def stream(n):
-    for i in range(n):
-        yield i
-
 if __name__ == "__main__":
     num_lanes = 8
-    num_accesses = 10000000
+    num_accesses = 10000
+    page_size = 2 * oneMiB
     num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes
 
     # Address generator
@@ -28,9 +26,10 @@ if __name__ == "__main__":
     l1_tlbs = []
     l2_tlbs = []
     for i in range(num_lanes):
-        l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 32, associativity = 32, page_size_bytes = 4 * oneKiB))
-        l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 3 * 1024, associativity = 12, page_size_bytes = 4 * oneKiB))
-    backend_memory = MemoryBackend("Mem", page_size_bytes = 4 * oneKiB)
+        l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 32, associativity = 32, page_size_bytes = page_size))
+        l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 3 * 1024, associativity = 12, page_size_bytes = page_size))
+    pooled_ptws = PooledPTWsBaseline("ptw_pool", page_table_size = page_size)
+    backend_memory = MemoryBackend("Mem", page_size_bytes = page_size)
 
     # connections
     ## stream <-> L1
@@ -41,9 +40,15 @@ if __name__ == "__main__":
         ## L1 <-> L2
         l1_tlbs[i].connect_lower_level_device(l2_tlbs[i])
         l2_tlbs[i].connect_higher_level_device(l1_tlbs[i])
-        ## L2 <-> mem
-        l2_tlbs[i].connect_lower_level_device(backend_memory)
-        backend_memory.connect_higher_level_device(l2_tlbs[i])
+        ## L2 <-> PTW
+        #l2_tlbs[i].connect_lower_level_device(backend_memory)
+        #backend_memory.connect_higher_level_device(l2_tlbs[i])
+        l2_tlbs[i].connect_lower_level_device(pooled_ptws)
+        pooled_ptws.connect_higher_level_device(l2_tlbs[i])
+    ## PTW <-> Mem
+    pooled_ptws.connect_lower_level_device(backend_memory)
+    backend_memory.connect_higher_level_device(pooled_ptws)
+    
 
     # start simulation
     address_stream_manager.start_simulating()

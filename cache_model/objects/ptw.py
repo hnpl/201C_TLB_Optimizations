@@ -87,7 +87,6 @@ class PooledPTWs(Device):
     def receive_request_and_send_response(self, vaddr):
         self.stats["requestReceived"] += 1
         self.requests.append(vaddr)
-        print("receive", vaddr)
         return vaddr >> self.num_offset_bits # sending a fake response since we are not doing any real translation
     def make_progress(self):
         raise NotImplementedError(f"{self.name} make_progress() must be implemented for all PooledPTWs devices")
@@ -180,7 +179,6 @@ class PooledPTWs2(PooledPTWs):
                 self.access_memory(sub_vpn)
                 to_be_visited.append(child_node)
         self.requests = []
-        print("make_progress", self.count)
 
 
 class PooledPTWs3(PooledPTWs):
