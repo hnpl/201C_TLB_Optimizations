@@ -83,7 +83,8 @@ class PooledPTWs(Device):
         self.addStat("requestReceived", 0)
         self.addStat("requestSent", 0)
     def send_request_and_receive_response(self, vaddr):
-        return self.lower_level_device.receive_request_and_send_response(vaddr)
+        assert((len(self.lower_level_devices) == 1) and "PooledPTWs should have only one lower level device")
+        return self.lower_level_devices[0].receive_request_and_send_response(vaddr)
     def receive_request_and_send_response(self, vaddr):
         self.stats["requestReceived"] += 1
         self.requests.append(vaddr)
@@ -179,8 +180,6 @@ class PooledPTWs2(PooledPTWs):
                 self.access_memory(sub_vpn)
                 to_be_visited.append(child_node)
         self.requests = []
-        print("make_progress", self.count)
-
 
 class PooledPTWs3(PooledPTWs):
     def __init__(self, name, page_table_size = 2**12):
