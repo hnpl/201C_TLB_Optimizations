@@ -34,6 +34,29 @@ class AddressStreamManager:
             except StopIteration:
                 self.is_done = True
                 break
+
+        # doing BFS traversal on all of the devices and calling make_progress
+        to_be_visited = [stream for stream in self.streams]
+        while to_be_visited:
+            next_device = to_be_visited.pop(0)
+            next_device.make_progress()
+            for lower_level_device in next_device.lower_level_device:
+                if not lower_level_device in to_be_visited:
+                    to_be_visited.append(lower_level_device)
+
         for stream in self.streams:
             stream.do_tick()
 
+"""
+stream   stream   stream
+ |          |       |
+ L1         L1      L1
+ |          |       |
+ L2         L2      L2
+ |          |       |
+ --------------------
+            |
+         PoolPTWs
+ 
+ 
+"""
