@@ -59,26 +59,6 @@ def parse_vaddr(vaddr, page_size_bytes):
 # 2MiB page size (2^21) -> 3 levels of page table -> 21+9+9+9
 # 1GiB page size (2^30) -> 2 levels of page table -> 30+9+9
 
-class PageTableWalker(Device):
-    def __init__(self, name, page_table_size = 2**12):
-        super().__init__(name)
-        self.num_offset_bits = round(log2(page_table_size))
-        self.num_page_table_levels = page_size_bytes_to_num_page_table_levels(page_table_size)
-        
-    def regStats(self):
-        self.addStat("requestReceived", 0)
-        self.addStat("requestSent", 0)
-
-    def send_request_and_receive_response(self, vaddr):
-        self.lower_level_device.receive_request_and_send_response(vaddr)
-
-    def receive_request_and_send_response(self, vaddr):
-        self.stats["requestReceived"] += 1
-        for access_idx in range(self.num_page_table_levels):
-            self.stats["requestSent"] += 1
-            self.send_request_and_receive_response(vaddr)
-        return vaddr >> self.num_offset_bits
-
 """
 |--------------||--------------||--------------||--------------||--------------||--------------||--------------||--------------|
 |      L2      ||      L2      ||      L2      ||      L2      ||      L2      ||      L2      ||      L2      ||      L2      |
@@ -107,7 +87,6 @@ class PooledPTWs(Device):
     def receive_request_and_send_response(self, vaddr):
         self.stats["requestReceived"] += 1
         self.requests.append(vaddr)
-        print("receive", vaddr)
         return vaddr >> self.num_offset_bits # sending a fake response since we are not doing any real translation
     def make_progress(self):
         raise NotImplementedError(f"{self.name} make_progress() must be implemented for all PooledPTWs devices")
@@ -132,6 +111,15 @@ class PooledPTWs(Device):
         3. (1, 32, 85, 92) accumulates to 4 requests
 """
 
+class PooledPTWsBaseline(PooledPTWs):
+    def __init__(self, name, page_table_size = 2**12):
+        super().__init__(name, page_table_size)
+    def make_progress(self):
+        for vaddr in self.requests:
+            for vpn_i in parse_vaddr(vaddr, self.page_size_bytes):
+                self.access_memory(vpn_i)
+        self.requests = []
+
 class PooledPTWs1(PooledPTWs):
     def __init__(self, name, page_table_size = 2**12):
         super().__init__(name, page_table_size)
@@ -139,7 +127,7 @@ class PooledPTWs1(PooledPTWs):
         vpns = set()
         for vaddr in self.requests:
             vpns.add(vaddr >> self.num_offset_bits)
-        for vaddr in self.requests:
+        for vaddr in vpns:
             for vpn_i in parse_vaddr(vaddr, self.page_size_bytes):
                 self.access_memory(vpn_i)
         self.requests = []
