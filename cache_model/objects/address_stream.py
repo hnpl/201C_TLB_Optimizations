@@ -39,8 +39,10 @@ class AddressStreamManager:
         to_be_visited = [stream for stream in self.streams]
         while to_be_visited:
             next_device = to_be_visited.pop(0)
-            next_device.make_progress()
-            for lower_level_device in next_device.lower_level_device:
+            if next_device:
+                next_device.make_progress()
+                lower_level_device = next_device.lower_level_device
+                #for lower_level_device in next_device.lower_level_device:
                 if not lower_level_device in to_be_visited:
                     to_be_visited.append(lower_level_device)
 
