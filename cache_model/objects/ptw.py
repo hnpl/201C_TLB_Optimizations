@@ -61,7 +61,7 @@ def parse_vaddr(vaddr, page_size_bytes):
 
 class PageTableWalker(Device):
     def __init__(self, name, page_table_size = 2**12):
-    	super().__init__(name)
+        super().__init__(name)
         self.num_offset_bits = round(log(page_table_size))
         self.num_page_table_levels = page_size_bytes_to_num_page_table_levels(page_table_size)
         
