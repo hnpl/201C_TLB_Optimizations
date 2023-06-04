@@ -78,7 +78,19 @@ class TLBCache(Device):
         if position == -1: # TLB cache miss
             #print(self.name, "miss")
             self.stats["numMisses"] += 1
-            target_entry = self.send_request_and_receive_response(vaddr)
+            response = self.send_request_and_receive_response(vaddr)
+            if isinstance(response, TLBCacheEntry):
+                target_entry = response
+            elif isinstance(response, int):
+                target_entry = TLBCacheEntry(
+                    vpn = vaddr >> self.num_offset_bits,
+                    pfn = response,
+                    valid = True,
+                    access_time = self.tick,
+                    num_offset_bits = self.num_offset_bits
+                )
+            else:
+                assert(False and "Should not happen")
             evicted_entry = self._add_new_entry(target_entry)
             #if not evicted_entry == None:
             #    self.send_eviction(evicted_entry)

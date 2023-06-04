@@ -26,10 +26,4 @@ class MemoryBackend(Device):
         if not vpn in self.translations:
             self.translations[vpn] = vpn
 
-        return TLBCacheEntry(
-            vpn = vpn,
-            pfn = self.translations[vpn],
-            valid = True,
-            access_time = self.tick,
-            num_offset_bits = self.num_offset_bits
-        )
+        return vpn
