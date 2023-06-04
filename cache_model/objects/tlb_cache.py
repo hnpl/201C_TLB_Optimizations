@@ -100,7 +100,8 @@ class TLBCache(Device):
             target_entry = self.cache_memory[vaddr_idx][position]
         return target_entry
     def send_request_and_receive_response(self, vaddr):
-        return self.lower_level_device.receive_request_and_send_response(vaddr)
+        assert((len(self.lower_level_devices) == 1) and "TLBCache should only have one lower device")
+        return self.lower_level_devices[0].receive_request_and_send_response(vaddr)
 
     # Don't need to send or receive eviction as this is a readonly writeback cache, i.e., a strictly-inclusive cache
     # def send_eviction(self, cache_entry):

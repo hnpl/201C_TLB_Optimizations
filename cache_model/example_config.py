@@ -2,6 +2,7 @@ from objects.tlb_cache import TLBCache
 from objects.memory_backend import MemoryBackend
 from objects.address_stream import AddressStreamManager
 from objects.ptw import *
+from objects.simulator import Simulator
 
 from constants import *
 from pattern_generators.address_generator import *
@@ -9,8 +10,8 @@ from pattern_generators.index_generator import *
 
 if __name__ == "__main__":
     num_lanes = 8
-    num_accesses = 10000
-    page_size = 2 * oneMiB
+    num_accesses = 1000000
+    page_size = 4 * oneKiB
     num_accesses = (num_accesses + num_lanes - 1) // num_lanes * num_lanes
 
     # Address generator
@@ -22,13 +23,13 @@ if __name__ == "__main__":
     )
 
     # Devices
-    address_stream_manager = AddressStreamManager(num_lanes = num_lanes, address_generator = address_generator)
+    address_stream_manager = AddressStreamManager("address_stream_manager", num_lanes = num_lanes, address_generator = address_generator)
     l1_tlbs = []
     l2_tlbs = []
     for i in range(num_lanes):
         l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 32, associativity = 32, page_size_bytes = page_size))
         l2_tlbs.append(TLBCache(f"l2_tlb_{i}", num_entries = 3 * 1024, associativity = 12, page_size_bytes = page_size))
-    pooled_ptws = PooledPTWsBaseline("ptw_pool", page_table_size = page_size)
+    pooled_ptws = PooledPTWs1("ptw_pool", page_table_size = page_size)
     backend_memory = MemoryBackend("Mem", page_size_bytes = page_size)
 
     # connections
@@ -51,7 +52,8 @@ if __name__ == "__main__":
     
 
     # start simulation
-    address_stream_manager.start_simulating()
+    simulator = Simulator(root_object = address_stream_manager, stats_filename="stats.txt")
+    simulator.start_simulation()
     print("final state")
     print("L1[0]")
     l1_tlbs[0].print_cache_memory()
