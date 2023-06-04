@@ -17,7 +17,7 @@ from .tlb_cache_entry import TLBCacheEntry
 # 1GiB page size (2^30) -> 2 levels of page table -> 30+9+9
 
 class PageTableWalker(Device):
-    def __init__(self, page_table_size = 2**12):
+    def __init__(self, name, page_table_size = 2**12):
     	super().__init__(name)
         
         self.num_offset_bits = round(log(page_table_size))
