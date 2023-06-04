@@ -16,9 +16,9 @@ class Device(StatsGroup):
     def make_progress(self): # this function is meant for the AddressCoalescer and the Pool devices
         pass
     def receive_request_and_send_response(self, vaddr):
-        raise NotImplementedError("")
+        raise NotImplementedError(f"{self.name} receive_request_and_send_response() must be defined for all Device objects!")
     def send_request_and_receive_response(self, vaddr):
-        raise NotImplementedError("")
+        raise NotImplementedError(f"{self.name} send_request_and_receive_response() must be defined for all Device objects!")
     def do_tick(self):
         self.tick += 1
         if not self.lower_level_device == None:
