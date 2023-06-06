@@ -9,7 +9,7 @@ class IndexGenerator:
     def __next__(self):
         return next(self.pattern)
 
-class FileGenerator(IndexGenerator):
+class FileBasedIndexGenerator(IndexGenerator):
     def __init__(self, num_accesses, filepath):
         super().__init__(num_accesses)
         self.sequence = []
@@ -20,14 +20,14 @@ class FileGenerator(IndexGenerator):
         for i in range(self.num_accesses):
             yield self.sequence[i%n]
 
-class LinearGenerator(IndexGenerator):
+class LinearIndexGenerator(IndexGenerator):
     def __init__(self, num_accesses):
         super().__init__(num_accesses)
     def sequence_generator(self):
         for i in range(self.num_accesses):
             yield i
 
-class StrideGenerator(IndexGenerator):
+class StrideIndexGenerator(IndexGenerator):
     def __init__(self, num_accesses, stride, offset = 0):
         super().__init__(num_accesses)
         self.offset = offset
@@ -36,7 +36,7 @@ class StrideGenerator(IndexGenerator):
         for i in range(self.num_accesses):
             yield self.offset + i * self.stride
 
-class MultiplicativeGenerator(IndexGenerator):
+class MultiplicativeIndexGenerator(IndexGenerator):
     # multiplier should be a prime number such that multiplicative_order(Mod(multiplier, modulo)) == module - 1
     # for page size of 4KiB and element size of 8 bytes, multiplier should be bigger than 512 so that (almost) all adjacent indices will touch different pages
     def __init__(self, num_accesses, multiplier = 523, modulo = 10**7 + 79):
