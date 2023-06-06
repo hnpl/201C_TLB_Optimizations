@@ -1,3 +1,5 @@
+import pathlib
+
 class Simulator:
     def __init__(self, root_object, stats_filename):
         self.root_object = root_object
@@ -6,6 +8,8 @@ class Simulator:
     def pre_simulation(self):
         self.root_object.populateStats()
     def post_simulation(self):
+        # create the folder if it does not exist
+        pathlib.Path(self.stats_filename).parent.mkdir(parents=True, exist_ok=True)
         with open(self.stats_filename, "w") as f:
             self.root_object.dumpStats(f)
     def start_simulation(self):
