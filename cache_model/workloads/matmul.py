@@ -39,4 +39,5 @@ class DGEMMWorkload(Workload):
                                 yield self.matrix_index_to_address(self.C_offset, i, j+lane_idx)
         yield StopIteration()
     def __next__(self):
-        return vaddr
+        for vaddr in self.index_generator():
+            return vaddr
