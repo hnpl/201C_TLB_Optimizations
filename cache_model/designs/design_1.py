@@ -6,10 +6,6 @@ from objects.ptw import *
 from objects.simulator import Simulator
 from objects.address_coalescer import AddressCoalescer
 
-from constants import *
-from pattern_generators.address_generator import *
-from pattern_generators.index_generator import *
-
 class Design1(Design):
     def __init__(self, num_lanes, page_size_bytes, address_generator, stats_filename):
         super().__init__(num_lanes, page_size_bytes, address_generator, stats_filename)
