@@ -27,6 +27,8 @@ class StreamCopyWorkload(PhasedWorkload):
         next_state_map = { self.state_load: self.state_store,
                            self.state_store: self.state_load }
         return next_state_map[current_state]
+    def get_name(self):
+        return f"stream_copy_{self.num_lanes}_{self.array_size}_{self.element_size_bytes}"
 
 class StreamAddWorkload(PhasedWorkload):
     def __init__(self, num_lanes, array_size, element_size_bytes):
@@ -55,4 +57,6 @@ class StreamAddWorkload(PhasedWorkload):
                            self.state_load_2: self.state_store,
                            self.state_store: self.state_load_1 }
         return next_state_map[current_state]
+    def get_name(self):
+        return f"stream_add_{self.num_lanes}_{self.array_size}_{self.element_size_bytes}"
 

@@ -8,7 +8,7 @@ from objects.address_coalescer import AddressCoalescer
 
 class Design4(Design):
     def __init__(self, num_lanes, page_size_bytes, address_generator, stats_filename):
-        super().__init__(num_lanes, page_size_bytes, address_generator, stats_filename)
+        super().__init__("design_4", num_lanes, page_size_bytes, address_generator, stats_filename)
     def configure(self):
         # Devices
         address_stream_manager = AddressStreamManager("address_stream_manager", num_lanes = self.num_lanes, address_generator = self.address_generator)
