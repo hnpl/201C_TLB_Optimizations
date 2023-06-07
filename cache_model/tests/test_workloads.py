@@ -3,6 +3,7 @@ sys.path.append("./")
 
 from workloads.stream import StreamCopyWorkload, StreamAddWorkload
 from workloads.irregular import PermutatingGatherWorkload, GUPSWorkload
+from workloads.matrix import GEMMWorkload
 
 if __name__ == "__main__":
     num_lanes = 8
@@ -36,3 +37,15 @@ if __name__ == "__main__":
     for i in workload:
         count += 1
     assert(count == (actual_array_size * 4))
+
+    # GEMM
+    matrix_dim = 128
+    block_size = 16
+    workload = GEMMWorkload(num_lanes = num_lanes, matrix_dim = matrix_dim, block_size = block_size, element_size_bytes = 8)
+    count = 0
+    for i in workload:
+        count += 1
+    num_A_accesses = (matrix_dim ** 2) * ((matrix_dim // block_size) ** 2)
+    num_B_accesses = (matrix_dim * (block_size**2)) * ((matrix_dim // block_size) ** 2)
+    num_C_accesses = num_B_accesses * 2
+    assert(count == (num_A_accesses + num_B_accesses + num_C_accesses))
