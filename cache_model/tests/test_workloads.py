@@ -3,7 +3,7 @@ sys.path.append("./")
 
 from workloads.stream import StreamCopyWorkload, StreamAddWorkload
 from workloads.irregular import PermutatingGatherWorkload, GUPSWorkload
-from workloads.matrix import GEMMWorkload
+from workloads.matrix import GEMMWorkload, CFFTS1Workload
 
 if __name__ == "__main__":
     num_lanes = 8
@@ -49,3 +49,11 @@ if __name__ == "__main__":
     num_B_accesses = (matrix_dim * (block_size**2)) * ((matrix_dim // block_size) ** 2)
     num_C_accesses = num_B_accesses * 2
     assert(count == (num_A_accesses + num_B_accesses + num_C_accesses))
+
+    # CFFTS1
+    workload = CFFTS1Workload(num_lanes = num_lanes, matrix_dim = matrix_dim, block_size = block_size, element_size_bytes = 8)
+    count = 0
+    for i in workload:
+        count += 1
+    print(count)
+
