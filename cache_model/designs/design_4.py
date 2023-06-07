@@ -6,11 +6,7 @@ from objects.ptw import *
 from objects.simulator import Simulator
 from objects.address_coalescer import AddressCoalescer
 
-from constants import *
-from pattern_generators.address_generator import *
-from pattern_generators.index_generator import *
-
-class Design3(Design):
+class Design4(Design):
     def __init__(self, num_lanes, page_size_bytes, address_generator, stats_filename):
         super().__init__(num_lanes, page_size_bytes, address_generator, stats_filename)
     def configure(self):
@@ -22,8 +18,8 @@ class Design3(Design):
             l1_tlbs.append(TLBCache(f"l1_tlb_{i}", num_entries = 72, associativity = 72, page_size_bytes = self.page_size_bytes))
         address_coalescer = AddressCoalescer("address_coalescer", page_size_bytes = self.page_size_bytes)
         l2_tlb = TLBCache(f"l2_tlb", num_entries = 3072, associativity = 24, page_size_bytes = self.page_size_bytes)
-        pooled_ptws = PooledPTWs3("ptw_pool", page_table_size = self.page_size_bytes)
         backend_memory = MemoryBackend("Memory", page_size_bytes = self.page_size_bytes)
+        pooled_ptws = PooledPTWs3("ptw_pool", memory_backend = backend_memory, page_table_size = self.page_size_bytes)
 
         # connections
         ## stream <-> L1
