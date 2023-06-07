@@ -202,10 +202,10 @@ class PooledPTWs3(PooledPTWs):
         memory_backend.connect_higher_level_device(self.l2_pte_cache)
         self.add_child_device(self.l2_pte_cache)
         # Add a small cache caching Level 3 page table entry, this causes a lot of misses
-        #self.l3_pte_cache = DataCache(name = "l3_pte_cache", num_entries = 32, associativity = 8, block_size_bytes = 64)
-        #self.l3_pte_cache.connect_lower_level_device(memory_backend)
-        #memory_backend.connect_higher_level_device(self.l3_pte_cache)
-        #self.add_child_device(self.l3_pte_cache)
+        self.l3_pte_cache = DataCache(name = "l3_pte_cache", num_entries = 2**13, associativity = 8, block_size_bytes = 64)
+        self.l3_pte_cache.connect_lower_level_device(memory_backend)
+        memory_backend.connect_higher_level_device(self.l3_pte_cache)
+        self.add_child_device(self.l3_pte_cache)
     def add_path_to_graph(sub_vpns, vpn_graph_root):
         w = vpn_graph_root
         concat_vpn = 0
@@ -237,9 +237,9 @@ class PooledPTWs3(PooledPTWs):
                 elif level == 2:
                     pte_address = self.satp + (2**9) * 8 + concat_vpn * 8
                     self.l2_pte_cache.receive_request_and_send_response(pte_address)
-                #elif level == 3:
-                #    pte_address = self.satp + (2**9 + 2**18) * 8 + concat_vpn * 8
-                #    self.l3_pte_cache.receive_request_and_send_response(pte_address)
+                elif level == 3:
+                    pte_address = self.satp + (2**9 + 2**18) * 8 + concat_vpn * 8
+                    self.l3_pte_cache.receive_request_and_send_response(pte_address)
                 else:
                     self.access_memory(concat_vpn)
                 to_be_visited.append(child_node)
