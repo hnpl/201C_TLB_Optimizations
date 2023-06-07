@@ -1,3 +1,4 @@
+from pathlib import Path
 import multiprocessing as mp
 
 # https://stackoverflow.com/questions/53617425/sharing-a-counter-with-multiprocessing-pool
@@ -18,6 +19,10 @@ class SimulationManager:
         self.counter = mp.Value('i', 0)
     def add_simulation(self, design_class, num_lanes, page_size_bytes, workload):
         simulation = design_class(num_lanes, page_size_bytes, workload)
+        stats_filename = simulation.stats_filename
+        if Path(stats_filename).is_files():
+            print(f"warn: Skipping {simulation.get_simulation_name()} as '{stats_filename}' exists.")
+            return
         self.simulations.append(simulation)
     def launch(self):
         num_simulations = len(self.simulations)
