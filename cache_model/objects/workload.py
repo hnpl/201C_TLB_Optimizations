@@ -6,6 +6,8 @@ class Workload:
         return self
     def __next__(self):
         raise NotImplementedError("__next__() must be implemented for all Workload objects")
+    def get_name(self):
+        raise NotImplementedError("get_name() must be implemented for all Workload objects")
 
 # A Workload that can change its state.
 # Each address generator generates a stream of indices for an array, and a state is associated with an array.

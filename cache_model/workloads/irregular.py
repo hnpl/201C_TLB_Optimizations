@@ -32,6 +32,8 @@ class PermutatingGatherWorkload(PhasedWorkload): # Scatter and gather are pretty
                            self.state_load_2: self.state_store,
                            self.state_store: self.state_load_1 }
         return next_state_map[current_state]
+    def get_name(self):
+        return f"permutating_gather_{self.num_lanes}_{self.array_size}_{self.element_size_bytes}"
 
 class GUPSWorkload(Workload):
     def __init__(self, num_lanes, num_accesses, table_size = 2**20, batch_size = 128, element_size_bytes = 8):
@@ -123,3 +125,5 @@ class GUPSWorkload(Workload):
             assert(False and "Unknown state!")
         self.lane_idx += 1
         return vaddr
+    def get_name(self):
+        return f"gups_{self.num_lanes}_{self.num_accesses}_{self.element_size_bytes}"

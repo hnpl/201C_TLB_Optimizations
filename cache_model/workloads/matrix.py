@@ -41,3 +41,5 @@ class GEMMWorkload(Workload):
                                 yield self.matrix_index_to_address(self.C_offset, i, j+lane_idx)
     def __next__(self):
         return next(self.generator)
+    def get_name(self):
+        return f"gemm_{self.num_lanes}_{self.matrix_dim}_{self.block_size}_{self.element_size_bytes}"

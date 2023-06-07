@@ -114,3 +114,5 @@ class CFFTS1Workload(Workload):
                                                          k, j, i + lane_idx)
     def __next__(self):
         return next(self.generator)
+    def get_name(self):
+        return f"npb_cffts1_{self.num_lanes}_{self.matrix_dim}_{self.block_size}_{self.element_size_bytes}"
