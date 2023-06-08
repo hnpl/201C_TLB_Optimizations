@@ -20,13 +20,13 @@ class StandardDGEMMWorkload(GEMMWorkload):
     def __init__(self, num_lanes):
         super().__init__(num_lanes = num_lanes,
                          matrix_dim = 384,
-                         block_size = 32,
+                         block_size = max(32, min(384, num_lanes)),
                          element_size_bytes = 8)
 class StandardCFFTS1Workload(CFFTS1Workload):
     def __init__(self, num_lanes):
         super().__init__(num_lanes = num_lanes,
-                         matrix_dim = 192,
-                         block_size = 32,
+                         matrix_dim = 128,
+                         block_size = max(32, min(128, num_lanes)),
                          element_size_bytes = 8)
 
 class StandardStreamCopyWorkload(StreamCopyWorkload):
